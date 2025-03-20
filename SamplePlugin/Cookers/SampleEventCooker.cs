@@ -21,23 +21,23 @@ namespace SamplePlugin.Cookers
         public SampleEventCooker()
             : base(DataCookerPath)
         {
-            this.SampleEvents = new List<SampleEvent>();
+            this.SampleEvents = new List<PresentEvent>();
         }
 
         public override string Description => "Stack Event cooker.";
 
         public override ReadOnlyHashSet<Type> DataKeys =>
-            new ReadOnlyHashSet<Type>(new HashSet<Type>(new[] { typeof(SampleEvent) }));
+            new ReadOnlyHashSet<Type>(new HashSet<Type>(new[] { typeof(PresentEvent) }));
 
         [DataOutput]
-        public List<SampleEvent> SampleEvents { get; }
+        public List<PresentEvent> SampleEvents { get; }
 
         public override DataProcessingResult CookDataElement(
             Event data,
             ParsingContext context,
             CancellationToken cancellationToken)
         {
-            SampleEvents.Add((SampleEvent)data);
+            SampleEvents.Add((PresentEvent)data);
 
             return DataProcessingResult.Processed;
         }

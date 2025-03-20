@@ -2,8 +2,8 @@
   "profiles": {
     "SamplePlugin": {
       "commandName": "Executable",
-      "executablePath": "C:\\Users\\benjaming\\source\\repos\\WPA_FOR_XPERF\\analyzer\\wpa\\internal\\bin\\x64\\Debug\\net8.0-windows\\win-x64\\wpa.exe",
-      "commandLineArgs": "-nodefault -addsearchdir \"C:\\Users\\benjaming\\source\\repos\\SamplePlugin\\SamplePlugin\\bin\\Debug\\net5.0\""
+      "executablePath": "C:\\Users\\vratnakaram\\OneDriveMS\\Documents\\GPU_Benchmarking\\PresentMonPlugin\\WPA_FOR_XPERF\\analyzer\\wpa\\internal\\bin\\ARM64\\Debug\\net8.0-windows\\win-arm64\\wpa.exe",
+      "commandLineArgs": "-nodefault -addsearchdir \"C:\\Users\\vratnakaram\\OneDriveMS\\Documents\\GPU_Benchmarking\\PresentMonPlugin\\SamplePlugin\\SamplePlugin\\bin\\ARM64\\Debug\\net5.0\""
     }
   }
 }
