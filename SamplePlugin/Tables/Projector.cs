@@ -55,9 +55,13 @@ namespace SamplePlugin.Tables
         {
             return e.msInPresentAPI;
         }
-        public static double msBetweenPresents(PresentEvent e)
+        public static TimestampDelta TimeBetweenPresents(PresentEvent e)
         {
-            return e.msBetweenPresents;
+            return TimestampDelta.FromMilliseconds(e.msBetweenPresents);
+        }
+        public static double FramesPerSecond(PresentEvent e)
+        {
+            return 1000 / e.msBetweenPresents;
         }
         public static int AllowsTearing(PresentEvent e)
         {

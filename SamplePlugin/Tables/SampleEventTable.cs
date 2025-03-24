@@ -124,12 +124,23 @@ namespace SamplePlugin.Tables
                 Width = 100
             });
 
-        private static readonly ColumnConfiguration msBetweenPresentsColumn = new ColumnConfiguration(
-            new ColumnMetadata(new Guid("4d781576-7367-495d-b100-b05ff2f43c46"), "msBetweenPresents"),
+        private static readonly ColumnConfiguration timeBetweenPresentsColumn = new ColumnConfiguration(
+            new ColumnMetadata(new Guid("4d781576-7367-495d-b100-b05ff2f43c46"), "TimeBetweenPresents"),
             new UIHints
             {
                 IsVisible = true,
-                Width = 100
+                Width = 100,
+                CellFormat = TimestampFormatter.FormatMillisecondsGrouped,
+                AggregationMode = AggregationMode.Average
+            });
+
+        private static readonly ColumnConfiguration framesPerSecondColumn = new ColumnConfiguration(
+            new ColumnMetadata(new Guid("1806936f-1164-46e3-9dfd-cb3a0f458c59"), "FPS"),
+            new UIHints
+            {
+                IsVisible = true,
+                Width = 100,
+                AggregationMode = AggregationMode.Average
             });
 
         private static readonly ColumnConfiguration allowsTearingColumn = new ColumnConfiguration(
@@ -198,7 +209,8 @@ namespace SamplePlugin.Tables
             IProjection<int, string?> presentResultProjection = baseProjection.Compose(Projector.PresentResult);
             IProjection<int, double> timeInSecondsProjection = baseProjection.Compose(Projector.TimeInSeconds);
             IProjection<int, double> msInPresentAPIProjection = baseProjection.Compose(Projector.msInPresentAPI);
-            IProjection<int, double> msBetweenPresentsProjection = baseProjection.Compose(Projector.msBetweenPresents);
+            IProjection<int, TimestampDelta> timeBetweenPresentsProjection = baseProjection.Compose(Projector.TimeBetweenPresents);
+            IProjection<int, double> framesPerSecondProjection = baseProjection.Compose(Projector.FramesPerSecond);
             IProjection<int, int> allowsTearingProjection = baseProjection.Compose(Projector.AllowsTearing);
             IProjection<int, string?> presentModeProjection = baseProjection.Compose(Projector.PresentMode);
             IProjection<int, double> msUntilRenderCompleteProjection = baseProjection.Compose(Projector.msUntilRenderComplete);
@@ -217,43 +229,45 @@ namespace SamplePlugin.Tables
             tableBuilderWithRowCount.AddColumn(presentResultColumn, presentResultProjection);
             tableBuilderWithRowCount.AddColumn(timeInSecondsColumn, timeInSecondsProjection);
             tableBuilderWithRowCount.AddColumn(msInPresentAPIColumn, msInPresentAPIProjection);
-            tableBuilderWithRowCount.AddColumn(msBetweenPresentsColumn, msBetweenPresentsProjection);
+            tableBuilderWithRowCount.AddColumn(timeBetweenPresentsColumn, timeBetweenPresentsProjection);
+            tableBuilderWithRowCount.AddColumn(framesPerSecondColumn, framesPerSecondProjection);
             tableBuilderWithRowCount.AddColumn(allowsTearingColumn, allowsTearingProjection);
             tableBuilderWithRowCount.AddColumn(presentModeColumn, presentModeProjection);
             tableBuilderWithRowCount.AddColumn(msUntilRenderCompleteColumn, msUntilRenderCompleteProjection);
             tableBuilderWithRowCount.AddColumn(msUntilDisplayed, msUntilDisplayedProjection);
             tableBuilderWithRowCount.AddColumn(msBetweenDisplayChange, msBwteenDisplayChangeProjection);
 
-
-            var tableConfig = new TableConfiguration("Stacks")
+            var frameTimeTableConfig = new TableConfiguration("Frame Time")
             {
                 Columns = new[]
                 {
                     processColumn,
-                    processIdColumn,
-                    threadIdColumn,
-                    presentModeColumn,
-                    swapChainAddressColumn,
-                    runtimeColumn,
-                    presentFlagsColumn,
-                    presentResultColumn,
-                    allowsTearingColumn,
                     TableConfiguration.PivotColumn,
-                    syncIntervalColumn,
-                    timeInSecondsColumn,
-                    msInPresentAPIColumn,
-                    msBetweenPresentsColumn,
-                    msUntilRenderCompleteColumn,
-                    msUntilDisplayed,
-                    msBetweenDisplayChange,
                     countColumn,
                     TableConfiguration.GraphColumn,
-                    timestampColumn
+                    timeBetweenPresentsColumn
                 },
             };
 
-            tableBuilder.AddTableConfiguration(tableConfig);
-            tableBuilder.SetDefaultTableConfiguration(tableConfig);
+
+            var fpsTableConfig = new TableConfiguration("FPS")
+            {
+                Columns = new[]
+                {
+                    processColumn,
+                    TableConfiguration.PivotColumn,
+                    countColumn,
+                    TableConfiguration.GraphColumn,
+                    framesPerSecondColumn
+                },
+            };
+
+            frameTimeTableConfig.AddColumnRole(ColumnRole.EndTime, timestampColumn);
+            fpsTableConfig.AddColumnRole(ColumnRole.EndTime, timestampColumn);
+
+            tableBuilder.AddTableConfiguration(frameTimeTableConfig);
+            tableBuilder.AddTableConfiguration(fpsTableConfig);
+            tableBuilder.SetDefaultTableConfiguration(frameTimeTableConfig);
         }
     }
 }
