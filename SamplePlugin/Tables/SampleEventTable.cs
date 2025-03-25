@@ -35,8 +35,17 @@ namespace SamplePlugin.Tables
                 AggregationMode = AggregationMode.Sum
             });
 
-        private static readonly ColumnConfiguration timestampColumn = new ColumnConfiguration(
-            new ColumnMetadata(new Guid("e53200ed-9dd4-4839-a591-8ee3acf5db70"), "Timestamp"),
+        private static readonly ColumnConfiguration endTimeColumn = new ColumnConfiguration(
+            new ColumnMetadata(new Guid("e53200ed-9dd4-4839-a591-8ee3acf5db70"), "EndTime"),
+            new UIHints
+            {
+                IsVisible = true,
+                Width = 100,
+                CellFormat = TimestampFormatter.FormatMillisecondsGrouped,
+            });
+
+        private static readonly ColumnConfiguration durationColumn = new ColumnConfiguration(
+            new ColumnMetadata(new Guid("26d6632d-fb59-4571-8f59-14740f72098b"), "Duration"),
             new UIHints
             {
                 IsVisible = true,
@@ -124,13 +133,12 @@ namespace SamplePlugin.Tables
                 Width = 100
             });
 
-        private static readonly ColumnConfiguration timeBetweenPresentsColumn = new ColumnConfiguration(
-            new ColumnMetadata(new Guid("4d781576-7367-495d-b100-b05ff2f43c46"), "TimeBetweenPresents"),
+        private static readonly ColumnConfiguration msBetweenPresentsColumn = new ColumnConfiguration(
+            new ColumnMetadata(new Guid("4d781576-7367-495d-b100-b05ff2f43c46"), "MsBetweenPresents"),
             new UIHints
             {
                 IsVisible = true,
                 Width = 100,
-                CellFormat = TimestampFormatter.FormatMillisecondsGrouped,
                 AggregationMode = AggregationMode.Average
             });
 
@@ -198,7 +206,8 @@ namespace SamplePlugin.Tables
             ITableBuilderWithRowCount tableBuilderWithRowCount = tableBuilder.SetRowCount(data.Count);
 
             IProjection<int, PresentEvent> baseProjection = Projection.Index(data);
-            IProjection<int, Timestamp> timestampProjection = baseProjection.Compose(Projector.Timestamp);
+            IProjection<int, Timestamp> endTimeProjection = baseProjection.Compose(Projector.EndTime);
+            IProjection<int, TimestampDelta> durationProjection = baseProjection.Compose(Projector.Duration);
             IProjection<int, string?> processProjection = baseProjection.Compose(Projector.Process);
             IProjection<int, long> processIdProjection = baseProjection.Compose(Projector.ProcessId);
             IProjection<int, long> threadIdProjection = baseProjection.Compose(Projector.ThreadId);
@@ -209,7 +218,7 @@ namespace SamplePlugin.Tables
             IProjection<int, string?> presentResultProjection = baseProjection.Compose(Projector.PresentResult);
             IProjection<int, double> timeInSecondsProjection = baseProjection.Compose(Projector.TimeInSeconds);
             IProjection<int, double> msInPresentAPIProjection = baseProjection.Compose(Projector.msInPresentAPI);
-            IProjection<int, TimestampDelta> timeBetweenPresentsProjection = baseProjection.Compose(Projector.TimeBetweenPresents);
+            IProjection<int, double> msBetweenPresentsProjection = baseProjection.Compose(Projector.MsBetweenPresents);
             IProjection<int, double> framesPerSecondProjection = baseProjection.Compose(Projector.FramesPerSecond);
             IProjection<int, int> allowsTearingProjection = baseProjection.Compose(Projector.AllowsTearing);
             IProjection<int, string?> presentModeProjection = baseProjection.Compose(Projector.PresentMode);
@@ -218,7 +227,8 @@ namespace SamplePlugin.Tables
             IProjection<int, double> msBwteenDisplayChangeProjection = baseProjection.Compose(Projector.msBetweenDisplayChange);
 
             tableBuilderWithRowCount.AddColumn(countColumn, Projection.Constant(1));
-            tableBuilderWithRowCount.AddColumn(timestampColumn, timestampProjection);
+            tableBuilderWithRowCount.AddColumn(endTimeColumn, endTimeProjection);
+            tableBuilderWithRowCount.AddColumn(durationColumn, durationProjection);
             tableBuilderWithRowCount.AddColumn(processColumn, processProjection);
             tableBuilderWithRowCount.AddColumn(processIdColumn, processIdProjection);
             tableBuilderWithRowCount.AddColumn(threadIdColumn, threadIdProjection);
@@ -229,7 +239,7 @@ namespace SamplePlugin.Tables
             tableBuilderWithRowCount.AddColumn(presentResultColumn, presentResultProjection);
             tableBuilderWithRowCount.AddColumn(timeInSecondsColumn, timeInSecondsProjection);
             tableBuilderWithRowCount.AddColumn(msInPresentAPIColumn, msInPresentAPIProjection);
-            tableBuilderWithRowCount.AddColumn(timeBetweenPresentsColumn, timeBetweenPresentsProjection);
+            tableBuilderWithRowCount.AddColumn(msBetweenPresentsColumn, msBetweenPresentsProjection);
             tableBuilderWithRowCount.AddColumn(framesPerSecondColumn, framesPerSecondProjection);
             tableBuilderWithRowCount.AddColumn(allowsTearingColumn, allowsTearingProjection);
             tableBuilderWithRowCount.AddColumn(presentModeColumn, presentModeProjection);
@@ -245,10 +255,9 @@ namespace SamplePlugin.Tables
                     TableConfiguration.PivotColumn,
                     countColumn,
                     TableConfiguration.GraphColumn,
-                    timeBetweenPresentsColumn
+                    msBetweenPresentsColumn
                 },
             };
-
 
             var fpsTableConfig = new TableConfiguration("FPS")
             {
@@ -262,8 +271,10 @@ namespace SamplePlugin.Tables
                 },
             };
 
-            frameTimeTableConfig.AddColumnRole(ColumnRole.EndTime, timestampColumn);
-            fpsTableConfig.AddColumnRole(ColumnRole.EndTime, timestampColumn);
+            frameTimeTableConfig.AddColumnRole(ColumnRole.EndTime, endTimeColumn);
+            frameTimeTableConfig.AddColumnRole(ColumnRole.Duration, durationColumn);
+            fpsTableConfig.AddColumnRole(ColumnRole.EndTime, endTimeColumn);
+            fpsTableConfig.AddColumnRole(ColumnRole.Duration, durationColumn);
 
             tableBuilder.AddTableConfiguration(frameTimeTableConfig);
             tableBuilder.AddTableConfiguration(fpsTableConfig);

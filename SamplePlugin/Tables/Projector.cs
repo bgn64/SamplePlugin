@@ -8,9 +8,14 @@ namespace SamplePlugin.Tables
 {
     internal class Projector
     {
-        public static Timestamp Timestamp(Event e)
+        public static Timestamp EndTime(Event e)
         {
             return e.Timestamp;
+        }
+
+        public static TimestampDelta Duration(PresentEvent e)
+        {
+            return TimestampDelta.FromMilliseconds(e.msBetweenPresents);
         }
 
         public static string? Process(PresentEvent e)
@@ -55,9 +60,9 @@ namespace SamplePlugin.Tables
         {
             return e.msInPresentAPI;
         }
-        public static TimestampDelta TimeBetweenPresents(PresentEvent e)
+        public static double MsBetweenPresents(PresentEvent e)
         {
-            return TimestampDelta.FromMilliseconds(e.msBetweenPresents);
+            return e.msBetweenPresents;
         }
         public static double FramesPerSecond(PresentEvent e)
         {
